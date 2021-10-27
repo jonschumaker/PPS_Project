@@ -2,7 +2,7 @@ Access IDs are:
 
 Priyadharshini Pichai (hj1782@wayne.edu)
 
-Jonathon Schumaker (hi9643@wayne.edu
+Jonathon Schumaker (hi9643@wayne.edu)
 
 Project part 1: 
 1. Hours working together: 10 hours over teams and in person
