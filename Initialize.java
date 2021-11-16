@@ -8,19 +8,197 @@ package bean;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 //import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import javax.servlet.annotation.WebServlet;
+import java.sql.Date;
+//import java.util.Date
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+
+import bean.People;
+import java.text.ParseException;
 //import java.util.Date;
+import java.io.IOException;
+import java.io.PrintWriter;
+/**
+ * Servlet implementation class Connect
+ */
+@WebServlet("/Initialize")
 
 public class Initialize  {
   private static Connection connect = null;
   private static Statement statement = null;
-  //private static PreparedStatement preparedStatement = null;
+  private static PreparedStatement preparedStatement = null;
   private static ResultSet resultSet = null;
+  
+  protected void connect_func() throws SQLException {
+      if (connect == null || connect.isClosed()) {
+          try {
+              Class.forName("com.mysql.jdbc.Driver");
+          } catch (ClassNotFoundException e) {
+              throw new SQLException(e);
+          }
+          connect = (Connection) DriverManager
+			      .getConnection("jdbc:mysql://127.0.0.1:3306/testdb?"
+			          + "useSSL=false&user=john&password=pass1234");
+          System.out.println(connect);
+      }
+  }
+  
+  public String totaldeposit(String fromUser) throws SQLException {
+   	  System.out.println("Inside Initialize totaldeposit ");
+	  //List<Transact> totaldeposit = new ArrayList<Transact>();        
+      connect_func();      
+   	  String sqldeposit = "select fromuser,sum(dollaramt) as total from transaction where fromuser= ? group by fromuser";       
+
+   	  System.out.println(sqldeposit);
+   	  System.out.println(fromUser);
+          
+      //statement =  (Statement) connect.createStatement();
+      //ResultSet resultSet = statement.executeQuery(sqldeposit);
+      preparedStatement = (PreparedStatement) connect.prepareStatement(sqldeposit);
+      preparedStatement.setString(1, fromUser);
+      ResultSet resultSet = preparedStatement.executeQuery();
+      System.out.println(resultSet);
+      resultSet.next();
+   	  System.out.println("Print resultSet.getString = ");
+      System.out.println(resultSet.getString("fromUser"));
+      System.out.println(resultSet.getString(2));
+      String result = resultSet.getString(2);
+      preparedStatement.close();
+
+      System.out.println("result = ");
+      System.out.println(result);
+
+      return result;     
+  }
+
+  public String dollarBalancet(String fromUser) throws SQLException {
+   	  System.out.println("Inside Initialize totaldeposit ");
+	  //List<Transact> totaldeposit = new ArrayList<Transact>();        
+      connect_func();      
+   	  String sqldeposit = "select emailid, dollarbal from users where emailid= ?";       
+
+   	  System.out.println(sqldeposit);
+   	  System.out.println(fromUser);
+          
+      //statement =  (Statement) connect.createStatement();
+      //ResultSet resultSet = statement.executeQuery(sqldeposit);
+      preparedStatement = (PreparedStatement) connect.prepareStatement(sqldeposit);
+      preparedStatement.setString(1, fromUser);
+      ResultSet resultSet = preparedStatement.executeQuery();
+      System.out.println(resultSet);
+      resultSet.next();
+   	  System.out.println("Print resultSet.getString = ");
+      System.out.println(resultSet.getString("emailid"));
+      System.out.println(resultSet.getString(2));
+      String result = resultSet.getString(2);
+      preparedStatement.close();
+
+      System.out.println("result = ");
+      System.out.println(result);
+
+      return result;     
+  }
+
+	public List<Transact> listtotalpps(String fromUser, String toUser) throws SQLException {
+		  System.out.println("Inside listtotalpps..........");
+	 List<Transact> listPps= new ArrayList<Transact>();        
+	 connect_func();      
+	 String sqlpps = "select emailid,PPSbalance from users where emailid IN ( ?, ?)";      
+	 preparedStatement = (PreparedStatement) connect.prepareStatement(sqlpps);
+	 preparedStatement.setString(1, fromUser);
+	 preparedStatement.setString(2, toUser);
+		  ResultSet resultSet = preparedStatement.executeQuery();
+	 System.out.println("preparedStatement.executeQuery called");
+	  
+	 while (resultSet.next()) {
+	     String emailid = resultSet.getString("emailid");
+	     int totalpps = resultSet.getInt("PPSbalance");
+	  	  System.out.println(emailid);
+	  	  System.out.println(totalpps);                   
+	     Transact totalPPS = new Transact(emailid,totalpps);
+	     listPps.add(totalPPS);
+	 }        
+	 resultSet.close();
+	 preparedStatement.close();         
+	 disconnect();        
+	 return listPps;
+	}
+	
+	public String totalpps(String fromUser, String toUser) throws SQLException {
+	 String sqlpps = "select emailid, PPSbalance from users where emailid IN ( ?, ?)";       
+	 connect_func();      
+	 preparedStatement = (PreparedStatement) connect.prepareStatement(sqlpps);
+	 preparedStatement.setString(1, fromUser);
+	 preparedStatement.setString(2, toUser);
+	 ResultSet resultSet = preparedStatement.executeQuery();
+	 resultSet.next();
+		  //System.out.println(resultSet.getString("fromUser"));
+	 String result;
+	 result = resultSet.getString(1);
+	 preparedStatement.close();
+	 return result;     
+	}
 
 
+  public String totalwithdraw(String transName, String fromUser) throws SQLException {
+      String sqlwithdraw = "select fromuser, sum(dollaramt) as total from transaction where fromuser= ? group by fromuser";       
+      connect_func();      
+      
+      preparedStatement = (PreparedStatement) connect.prepareStatement(sqlwithdraw);
+      //preparedStatement.setString(1, transName);
+      preparedStatement.setString(1, fromUser);
+      ResultSet resultSet = preparedStatement.executeQuery();
+      resultSet.next();
+   	System.out.println("Print resultSet.getString = ");
+      System.out.println(resultSet.getString("fromUser"));
+      System.out.println(resultSet.getString(2));
+      String result = resultSet.getString(2);
+      preparedStatement.close();
+
+      
+     // resultSet = statement.executeQuery("select * from Transaction");
+      //writeResultSet_table5(resultSet);
+      //      disconnect();
+      return result;     
+  }
+       
+  public String totalbuy(String transName, String toUser) throws SQLException {
+      String sqlbuy = "select touser, sum(PPSamt) as total from transaction where touser= ? group by touser";       
+      connect_func();      
+      
+      preparedStatement = (PreparedStatement) connect.prepareStatement(sqlbuy);
+      //preparedStatement.setString(1, transName);
+      preparedStatement.setString(1, toUser);
+      ResultSet resultSet = preparedStatement.executeQuery();
+      resultSet.next();
+   	System.out.println("Print resultSet.getString = ");
+      System.out.println(resultSet.getString("toUser"));
+      System.out.println(resultSet.getString(2));
+      String result = resultSet.getString(2);
+      preparedStatement.close();
+
+      
+     // resultSet = statement.executeQuery("select * from Transaction");
+      //writeResultSet_table5(resultSet);
+      //      disconnect();
+      return result;     
+  }
+  
+  
+  protected void disconnect() throws SQLException {
+      if (connect != null && !connect.isClosed()) {
+      	connect.close();
+      }
+  }
+  
 
  public static void main() {
 	 
@@ -37,9 +215,9 @@ public class Initialize  {
                    " fName VARCHAR(20), " + 
                    " lname VARCHAR(20), " +
                    " Address VARCHAR(50), " + 
-                   " birthday date, " + 
-                   " PPSbalance VARCHAR(50), " +
-                   " Dollarbal VARCHAR(50), " +
+                   " birthday DATE, " + 
+                   " PPSbalance BIGINT, " +
+                   " Dollarbal BIGINT, " +
                    " PRIMARY KEY ( emailid ))";  
 	String sql6 = "CREATE TABLE IF NOT EXISTS Follow " +
                    "(emailid VARCHAR(50) not NULL, " +
@@ -49,7 +227,7 @@ public class Initialize  {
 	String sql7 = "CREATE TABLE IF NOT EXISTS PPS " +
                    "(ppsprice INTEGER)"; 
 	String sql8 = "CREATE TABLE IF NOT EXISTS Transaction " +
-                   "(transid VARCHAR(50) not NULL, " +
+                   "(transid INTEGER not NULL AUTO_INCREMENT, " +
 				   " transname VARCHAR(50), " +
 				   " dollaramt INTEGER, " +
 				   " PPSamt INTEGER, " +
@@ -60,7 +238,7 @@ public class Initialize  {
                    " FOREIGN KEY (fromuser) REFERENCES Users(emailid), "+
 				   " FOREIGN KEY (touser) REFERENCES Users(emailid))"; 
      //String sql9 = "insert into  users(emailid, password, fName, lname, Address, birthday, PPSbalance, Dollarbal) values (?, ?, ?, ?, ? ,? , ?, ?)";
-     String sql10 = "insert into users(emailid, password, password2, fName, lname, Address, birthday, PPSbalance, Dollarbal) values (\"root\",\"pass1234\",\"pass1234\",\"root\" ,\"user\" ,\"143,Troy\" ,\"2015-12-17\" , \"1,000,000,000,000\",\"1000000\")";
+     String sql10 = "insert into users(emailid, password, password2, fName, lname, Address, birthday, PPSbalance, Dollarbal) values (\"root\",\"pass1234\",\"pass1234\",\"root\" ,\"user\" ,\"143,Troy\" ,\"2015-12-17\" , \"1000000000000\",\"1000000\")";
      String sql11 = "insert into users(emailid, password, password2, fName, lname, Address, birthday, PPSbalance, Dollarbal) values (\"hj1786@wayne.edu\",\"pass123\" ,\"pass123\" ,\"Priya\" ,\"Pichai\" ,\"123,Troy\" ,\"1984-09-26\" , \"1000\",\"1000\")";
 	 String sql12 = "insert into users(emailid, password, password2, fName, lname, Address, birthday, PPSbalance, Dollarbal) values (\"hi9643@wayne.edu\",\"pass1234\" ,\"pass1234\" ,\"Jon\" ,\"Sch\" ,\"124,Novi\" ,\"2015-12-17\" , \"1234\",\"1234\")";
 	 String sql13 = "insert into users(emailid, password, password2, fName, lname, Address, birthday, PPSbalance, Dollarbal) values (\"hj171@wayne.edu\",\"pass12\" ,\"pass12\" ,\"Dave\" ,\"Mill\" ,\"1276,Troy\" ,\"2015-12-17\" , \"1567\",\"1567\")";
@@ -71,7 +249,7 @@ public class Initialize  {
 	 String sql18 = "insert into users(emailid, password, password2, fName, lname, Address, birthday, PPSbalance, Dollarbal) values (\"hj173@wayne.edu\",\"pass1237\" ,\"pass1237\" ,\"Somu\" ,\"Kris\" ,\"183,Troy\" ,\"2015-12-17\" , \"16789\",\"15432\")";
 	 String sql19 = "insert into users(emailid, password, password2, fName, lname, Address, birthday, PPSbalance, Dollarbal) values (\"hj174@wayne.edu\",\"pass1236\" ,\"pass1236\" ,\"Kris\" ,\"Shree\" ,\"192,Troy\" ,\"2015-12-17\" , \"1789\",\"1678\")";
     //String sql20 = "UPDATE Student set Address=\"123 New Main Street, Troy, MI 48083\" WHERE Name=\"Shiyong Lu\"";
-	 String sql20 = "insert into pps(ppsprice) values (\"1000000\")";
+	 String sql20 = "insert into pps(ppsprice) values (\"1\")";
 	 String sql21 = "insert into follow(emailid, followerid, followdate) values (\"hj174@wayne.edu\",\"hj176@wayne.edu\" ,\"2015-12-17\")";
 	 String sql22 = "insert into follow(emailid, followerid, followdate) values (\"hj176@wayne.edu\",\"hj178@wayne.edu\" ,\"2010-09-16\")";
 	 String sql23 = "insert into follow(emailid, followerid, followdate) values (\"hj178@wayne.edu\",\"hj175@wayne.edu\" ,\"2011-08-15\")";
@@ -95,10 +273,12 @@ public class Initialize  {
     
 
     try {
+    	
     	System.out.println("Enter Try");
+    	
       //System.out.println("Select a table and then print out its content.");
       // This will load the MySQL driver, each DB has its own driver
-      // Class.forName("com.mysql.jdbc.Driver");
+      Class.forName("com.mysql.cj.jdbc.Driver");
       // Setup the connection with the DB
       connect = DriverManager
           .getConnection("jdbc:mysql://localhost:3306/testdb?"
@@ -221,8 +401,251 @@ public class Initialize  {
     }
 
   }
+ 
+ public boolean insertNewUser(People newPeople) throws SQLException {
+ 	connect_func();  
+ 	System.out.println("conn established");
+ 	SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+ 	String sql9 = "INSERT INTO users" +
+	            "  (emailid, password,password2,fName, lname, address, birthday) VALUES " +
+	            " (?, ?, ?, ?, ?, ?, ?);";
+ 	System.out.println("insert start");
+ 	System.out.println(sql9);
+ 	System.out.println(newPeople.password);
+		preparedStatement = (PreparedStatement) connect.prepareStatement(sql9);
+		preparedStatement.setString(1, newPeople.emailid);
+		preparedStatement.setString(2, newPeople.getpassword());
+		preparedStatement.setString(3, newPeople.getpassword2());
+		preparedStatement.setString(4, newPeople.fName);
+		preparedStatement.setString(5, newPeople.lname);
+		preparedStatement.setString(6, newPeople.address);
+        java.util.Date utilDate;
+        java.sql.Date sqlDate = null; 
+//		try {
+			utilDate = newPeople.birthday;
+	        sqlDate = new java.sql.Date(utilDate.getTime());
+//		} catch (ParseException e) {
+//			e.printStackTrace();
+//		}
 
-  private void writeMetaData(ResultSet resultSet) throws SQLException {
+		preparedStatement.setDate(7, sqlDate);
+//		preparedStatement.executeUpdate();
+		System.out.println(preparedStatement);
+     boolean rowInserted = preparedStatement.executeUpdate() > 0;
+     preparedStatement.close();
+//     disconnect();
+     return rowInserted;
+ }     
+ 
+ public boolean depositamt(Transact newtransact) throws SQLException {
+	 	connect_func();  
+	 	System.out.println("conn established");
+	 	SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+	 	String sql = "INSERT INTO transaction" +
+		            "  (transname, dollaramt,PPSamt,PPSbal, fromuser, touser) VALUES " +
+		            " (?, ?, ?, ?, ?, ?);";
+	 	System.out.println("insert start");
+	 	System.out.println(sql);
+	 	
+			preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
+			preparedStatement.setString(1, newtransact.transname);
+			preparedStatement.setInt(2, newtransact.dollaramt);
+			preparedStatement.setInt(3, newtransact.ppsamt);
+			preparedStatement.setInt(4, newtransact.ppsbal);
+			preparedStatement.setString(5, newtransact.fuser);
+			preparedStatement.setString(6, newtransact.tuser);
+	        java.util.Date utilDate;
+	        java.sql.Date sqlDate = null; 
+//			try {
+//				utilDate = newPeople.birthday;
+//		        sqlDate = new java.sql.Date(utilDate.getTime());
+//			} catch (ParseException e) {
+//				e.printStackTrace();
+//			}
+
+			//preparedStatement.setDate(7, sqlDate);
+//			preparedStatement.executeUpdate();
+			System.out.println(preparedStatement);
+	     boolean rowInserted = preparedStatement.executeUpdate() > 0;
+	     preparedStatement.close();
+//	     disconnect();
+	     return rowInserted;
+	 }     
+ 
+ 
+ public boolean withdrawamt(Transact newtransact) throws SQLException {
+	 	connect_func();  
+	 	System.out.println("conn established");
+	 	SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+	 	String sql = "INSERT INTO transaction" +
+		            "  (transname, dollaramt,PPSamt,PPSbal, fromuser, touser) VALUES " +
+		            " (?, -?, ?, ?, ?, ?);";
+	 	System.out.println("insert start");
+	 	System.out.println(sql);
+	 	
+			preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
+			preparedStatement.setString(1, newtransact.transname);
+			preparedStatement.setInt(2, newtransact.dollaramt);
+			preparedStatement.setInt(3, newtransact.ppsamt);
+			preparedStatement.setInt(4, newtransact.ppsbal);
+			preparedStatement.setString(5, newtransact.fuser);
+			preparedStatement.setString(6, newtransact.tuser);
+	        java.util.Date utilDate;
+	        java.sql.Date sqlDate = null; 
+//			try {
+//				utilDate = newPeople.birthday;
+//		        sqlDate = new java.sql.Date(utilDate.getTime());
+//			} catch (ParseException e) {
+//				e.printStackTrace();
+//			}
+
+			//preparedStatement.setDate(7, sqlDate);
+//			preparedStatement.executeUpdate();
+			System.out.println(preparedStatement);
+	     boolean rowInserted = preparedStatement.executeUpdate() > 0;
+	     preparedStatement.close();
+//	     disconnect();
+	     return rowInserted;
+	 }     
+ 
+ public boolean buypps(Transact newtransact) throws SQLException {
+	 	connect_func();  
+	 	System.out.println("conn established");
+	 	SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+	 	String sqlbuy = "INSERT INTO transaction" +
+		            "  (transname, dollaramt,PPSamt,PPSbal, fromuser, touser) VALUES " +
+		            " (?, ?, ?, ?, ?, ?);";
+
+	 	System.out.println("buy start");
+	 	System.out.println(sqlbuy);
+	 	
+	 	
+			preparedStatement = (PreparedStatement) connect.prepareStatement(sqlbuy);
+			preparedStatement.setString(1, newtransact.transname);
+			preparedStatement.setInt(2, newtransact.dollaramt);
+			preparedStatement.setInt(3, newtransact.ppsamt);
+			preparedStatement.setInt(4, newtransact.ppsbal);
+			preparedStatement.setString(5, newtransact.fuser);
+			preparedStatement.setString(6, newtransact.tuser);
+			
+			
+	        java.util.Date utilDate;
+	        java.sql.Date sqlDate = null; 
+//			try {
+//				utilDate = newPeople.birthday;
+//		        sqlDate = new java.sql.Date(utilDate.getTime());
+//			} catch (ParseException e) {
+//				e.printStackTrace();
+//			}
+
+			//preparedStatement.setDate(7, sqlDate);
+//			preparedStatement.executeUpdate();
+			System.out.println(preparedStatement);
+	     boolean rowInserted = preparedStatement.executeUpdate() > 0;
+	     preparedStatement.close();
+//	     disconnect();
+//	     return rowInserted;
+		     
+		     String sqlbuy2 = "UPDATE users SET PPSbalance = PPSbalance - ? WHERE emailid = 'root'";    
+		     System.out.println(sqlbuy2);
+		      connect_func();      
+		      preparedStatement = (PreparedStatement) connect.prepareStatement(sqlbuy2);
+		      preparedStatement.setInt(1, newtransact.ppsamt);
+		      //preparedStatement.setString(2, newtransact.fuser);
+		      System.out.println(preparedStatement);
+		      preparedStatement.executeUpdate();
+		      preparedStatement.close();
+		      
+		      String sqlbuy3 = "UPDATE users SET PPSbalance = PPSbalance + ? WHERE emailid = ?";    
+			     System.out.println(sqlbuy3);
+			      connect_func();      
+			      preparedStatement = (PreparedStatement) connect.prepareStatement(sqlbuy3);
+			      preparedStatement.setInt(1, newtransact.ppsamt);
+			      preparedStatement.setString(2, newtransact.tuser);
+			      System.out.println(preparedStatement);
+			      preparedStatement.executeUpdate();
+			      preparedStatement.close();
+			      
+			      String sqlbuy4 = "UPDATE pps SET ppsprice = ppsprice + ? WHERE ppsprice like '%%'";    
+				     System.out.println(sqlbuy4);
+				      connect_func();      
+				      preparedStatement = (PreparedStatement) connect.prepareStatement(sqlbuy4);
+				      preparedStatement.setInt(1, newtransact.ppsamt);
+				      //preparedStatement.setString(2, newtransact.tuser);
+				      System.out.println(preparedStatement);
+				      preparedStatement.executeUpdate();
+				      preparedStatement.close();
+				      
+				      String sqlbuy5 = "UPDATE users SET Dollarbal = Dollarbal-(SELECT * FROM pps WHERE ppsprice LIKE '%%') WHERE emailid = ?";    
+					     System.out.println(sqlbuy5);
+					      connect_func();      
+					      preparedStatement = (PreparedStatement) connect.prepareStatement(sqlbuy5);
+					      //preparedStatement.setInt(1, newtransact.ppsamt);
+					      preparedStatement.setString(1, newtransact.tuser);
+					      System.out.println(preparedStatement);
+					      preparedStatement.executeUpdate();
+					      preparedStatement.close();
+					  			  				  			  
+		     return rowInserted;
+		 }
+     
+
+ public boolean transferpps(Transact newtransact) throws SQLException {
+	 	connect_func();  
+	 	System.out.println("conn established");
+	 	SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
+	 	String sqltransfer = "INSERT INTO transaction" +
+		            "  (transname, dollaramt,PPSamt,PPSbal, fromuser, touser) VALUES " +
+		            " (?, ?, ?, ?, ?, ?);";
+	 	System.out.println("insert start");
+	 	System.out.println(sqltransfer);
+	 	
+			preparedStatement = (PreparedStatement) connect.prepareStatement(sqltransfer);
+			preparedStatement.setString(1, newtransact.transname);
+			preparedStatement.setInt(2, newtransact.dollaramt);
+			preparedStatement.setInt(3, newtransact.ppsamt);
+			preparedStatement.setInt(4, newtransact.ppsbal);
+			preparedStatement.setString(5, newtransact.fuser);
+			preparedStatement.setString(6, newtransact.tuser);
+	        java.util.Date utilDate;
+	        java.sql.Date sqlDate = null; 
+//			try {
+//				utilDate = newPeople.birthday;
+//		        sqlDate = new java.sql.Date(utilDate.getTime());
+//			} catch (ParseException e) {
+//				e.printStackTrace();
+//			}
+
+			//preparedStatement.setDate(7, sqlDate);
+//			preparedStatement.executeUpdate();
+			System.out.println(preparedStatement);
+	     boolean rowInserted = preparedStatement.executeUpdate() > 0;
+	     preparedStatement.close();
+//	     disconnect();
+	     
+	     String sqltransferupd1 = "UPDATE users SET PPSbalance = PPSbalance - ? WHERE emailid = ?";    
+	     System.out.println(sqltransferupd1);
+	      connect_func();      
+	      preparedStatement = (PreparedStatement) connect.prepareStatement(sqltransferupd1);
+	      preparedStatement.setInt(1, newtransact.ppsamt);
+	      preparedStatement.setString(2, newtransact.fuser);
+	      System.out.println(preparedStatement);
+	      preparedStatement.executeUpdate();
+	      preparedStatement.close();
+	      
+	      String sqltransferupd2 = "UPDATE users SET PPSbalance = PPSbalance + ? WHERE emailid = ?";    
+		     System.out.println(sqltransferupd2);
+		      connect_func();      
+		      preparedStatement = (PreparedStatement) connect.prepareStatement(sqltransferupd2);
+		      preparedStatement.setInt(1, newtransact.ppsamt);
+		      preparedStatement.setString(2, newtransact.tuser);
+		      System.out.println(preparedStatement);
+		      preparedStatement.executeUpdate();
+		      preparedStatement.close();
+	     return rowInserted;
+	 }
+ 
+ private void writeMetaData(ResultSet resultSet) throws SQLException {
     //   Now get some metadata from the database
     // Result set get the result of the SQL query
     
@@ -247,7 +670,7 @@ public class Initialize  {
       String id = resultSet.getString("emailid");
       String name = resultSet.getString("fName");
       String address = resultSet.getString("Address");
-      String birthday = resultSet.getString("birthday");
+      Date birthday = resultSet.getDate("birthday");
 	  String PPSbal = resultSet.getString("PPSbalance");
 	  String Dollarbal = resultSet.getString("Dollarbal");
       System.out.println("emailid: " + id);
@@ -257,29 +680,6 @@ public class Initialize  {
 	  System.out.println("PPSbal: " + PPSbal);
 	  System.out.println("Dollarbal: " + Dollarbal);
 	  System.out.println("");
-	  //String follower = resultSet.getString("followerid");
-	  //String followdate = resultSet.getString("followdate");
-	 // System.out.println("followerid: " + follower);
-	 // System.out.println("followdate: " + followdate);
-	  System.out.println("");
-	  //Integer ppsprice = resultSet.getInt("ppsprice");
-	  //System.out.println("ppsprice: " + ppsprice);
-	  System.out.println("");
-	  //Integer transid = resultSet.getInt("transid");
-	  //String transname = resultSet.getString("transname");
-	  //Integer dollaramt = resultSet.getInt("dollaramt");
-	  //Integer PPSamt = resultSet.getInt("PPSamt");
-	  //Integer PPSbal1 = resultSet.getInt("PPSbal");
-	  //String fromuser = resultSet.getString("fromuser");
-	  //String touser = resultSet.getString("touser");
-	  //System.out.println("transid: " + transid);
-	  //System.out.println("transname: " + transname);
-	  //System.out.println("dollaramt: " + dollaramt);
-	  //System.out.println("PPSamt: " + PPSamt);
-	  //System.out.println("PPSbal: " + PPSbal1);
-	  //System.out.println("fromuser: " + fromuser);
-	  //System.out.println("touser: " + touser);
-	  //System.out.println("");;
     }
   }
 
@@ -347,6 +747,24 @@ public class Initialize  {
 	  System.out.println("");;
     }
  }
+  
+/*  private static void writeResultSet_table5(ResultSet resultSet) throws SQLException {
+	    // ResultSet is initially before the first data set
+	    System.out.println("print dollaramt after deposit ..");
+	   
+	    	// It is possible to get the columns via name
+	      // also possible to get the columns via the column number
+	      // which starts at 1
+	      // e.g. resultSet.getSTring(2);
+
+		  String fromUser = resultSet.getString("fromUser");
+		  Integer dollaramt = resultSet.getInt("sum(dollaramt)");
+		  System.out.println("fromUser: " + fromUser);
+		  System.out.println("sum(dollaramt): " + dollaramt);
+		  System.out.println("");
+
+	    }
+*/	  
 
   // You need to close the resultSet
   private static void close() {
@@ -366,4 +784,9 @@ public class Initialize  {
 
     }
   }
-} 
+
+
+
+
+}
+ 
