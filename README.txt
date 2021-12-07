@@ -14,7 +14,6 @@ Project part 3:
     commonuserlist.jsp
     follow.jsp
     followadd.jsp
-    follow_popular_user.jsp
     inactive.jsp
     lucky.jsp
     myFollowers.jsp
@@ -31,15 +30,14 @@ Project part 3:
   b. Jonathon (~40 hours)
     ControlServlet.java
     Initialize.java
-    Action2.jsp
-    buy_printout.jsp
-    buy.jsp
-    deposit.jsp
-    sell.jsp
-    sell_printout.jsp
-    transaction.jsp
-    withdraw.jsp
-    Sql queries for transactions
+    bigbuy.jsp
+    bigbuyer.jsp
+    commonusers sql
+    follower_popular_users.jsp
+    frequentbuyer.jsp
+    inactive sql
+    neversell sql
+    Sql queries for views
 
 
 Project part 2: 
