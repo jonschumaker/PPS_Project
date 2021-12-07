@@ -3,6 +3,45 @@ Access IDs are:
 Priyadharshini Pichai (hj1782@wayne.edu)
 Jonathon Schumaker (hi9643@wayne.edu)
 
+Project part 3: 
+1. Hours working together: 15 hours over teams and in person
+2. Contributions made by each partner to this part:
+  a. Priyadharshini (~40 hours):
+    ControlServlet.java
+    initialize.java
+    UserInfo.java
+    commonbuyers.jsp
+    commonuserlist.jsp
+    follow.jsp
+    followadd.jsp
+    follow_popular_user.jsp
+    inactive.jsp
+    lucky.jsp
+    myFollowers.jsp
+    myFollowing.jsp
+    neverbuy.jsp
+    neversell.jsp
+    Save.jsp
+    sellPPSfail.jsp
+    statistics.jsp
+    transferPPSfail.jsp
+    Sql queries for follow
+    Sql queries for root user menu
+        
+  b. Jonathon (~40 hours)
+    ControlServlet.java
+    Initialize.java
+    Action2.jsp
+    buy_printout.jsp
+    buy.jsp
+    deposit.jsp
+    sell.jsp
+    sell_printout.jsp
+    transaction.jsp
+    withdraw.jsp
+    Sql queries for transactions
+
+
 Project part 2: 
 1. Hours working together: 15 hours over teams and in person
 2. Contributions made by each partner to this project:
