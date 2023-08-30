@@ -94,6 +94,6 @@ Project part 1:
     github creation
     Servelet integration
     environment in eclipse
-    had significant issues with Java, which were remedied on Sunday (24-OCT); delayed my abilities to contribute. 
-    I deserve a lesser grade. 
+
+
     
